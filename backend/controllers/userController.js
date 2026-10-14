@@ -249,17 +249,27 @@ const cancelAppointment = async (req, res) => {
     }
 }
 
-const razorpayInstance = new razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: ''
-})
+let razorpayInstance = null;
 
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpayInstance = new razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+}
 
 // API to make payment of appointment using razorpay
 
 const paymentRazorpay = async (req, res) => {
 
     try {
+
+        if (!razorpayInstance) {
+            return res.status(503).json({
+                success: false,
+                message: "Online payments are currently unavailable"
+            });
+        }
 
         const { appointmentId } = req.body
 
